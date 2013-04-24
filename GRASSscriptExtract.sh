@@ -1,4 +1,3 @@
-
 r.mapcalc "Train_For1=if(CrossProduct1984_2010_recode@Unsupervised_Classification==1,1,null())"
 r.mapcalc "Train_For2=if(CrossProduct1984_2010_recode@Unsupervised_Classification==13,1,null())"
 r.patch --overwrite input=Train_For1,Train_For2 output=Train_For
