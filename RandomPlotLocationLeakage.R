@@ -4,10 +4,6 @@
 # Kalk Bay
 # 2013/05/31
 
-
-
-
-
 library(maptools)
 library(sp)
 library(rgdal)
