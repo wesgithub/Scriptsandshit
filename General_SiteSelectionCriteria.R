@@ -12,7 +12,7 @@ require(RColorBrewer)
 require(rgeos)
 
 #######################################OPEN SHAPEFILE###########################################################
-setwd("C:/Users/carbon-gis/Documents/BCP_Data/Projects/EasternZambia_USAID/Vector/sites")
+setwd("C:/Users/carbon-gis/Documents/BCP_Data/Projects/Zim_Malilangwe/Vector/Malilangwe boundary")
 # Open fire data csv file. User is prompted to select the file which needs to be mapped / analyzed
 # select the shapefile and edit path and filename such that OGR recognises the inputs and will open it regardless 
 # of the file name or path
@@ -43,38 +43,42 @@ for (i in 1:length(c2)) {
   ee[,3]<-gLength(d)
   ee[,4]<-gArea(d)/10000
 #######################Topography#######################
-  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/EasternZambia_USAID/Raster/SiteSelectionScratch/test_SL.tif")
+  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/Zim_Malilangwe/Raster/DEM/01222015_Malilangwe_DEM_Clip_slope.tif")
   f<-crop(e,d)
   g<-mask(f,d)
-  h<-as.data.frame(freq(g))
+  rc <- reclassify(g, c(-Inf,8,1, 8,20,2, 20,Inf,3))
+  h<-as.data.frame(freq(rc))
   j<-subset(h, value<4&value>0)
   ee[,5]<-round(j[1,2]/(j[1,2]+j[2,2]+j[3,2])*100,2)
   ee[,6]<-round(j[2,2]/(j[1,2]+j[2,2]+j[3,2])*100,2)
   ee[,7]<-round(j[3,2]/(j[1,2]+j[2,2]+j[3,2])*100,2)
   rm(e,f,g,h,j)
 ########################Forest Cover##########################
-  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/EasternZambia_USAID/Raster/Hansen_Global_Forest_Change/Tree_Cover_2000/Hansen_GFC2013_TreeCover_GT10_UTM36s_Sieved_NoNull.tif")
+  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/Zim_Malilangwe/Raster/HansenGFW/TreeCover/01212015_ForestCover_Hansen_Malilangwe.tif")
   f<-crop(e,d)
   g<-mask(f,d)
-  h<-as.data.frame(freq(g))
-  j<-round(h[1,2]/(h[1,2]+h[2,2])*100,2)
+  rc <- reclassify(g, c(-Inf,10,0,10,Inf,1))
+  h<-as.data.frame(freq(rc))
+  j<-round(h[2,2]/(h[1,2]+h[2,2])*100,2)
   ee[,8]<-j
   rm(e,f,g,h,j)
 #######################SAATCHI CARBON########################
-  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/EasternZambia_USAID/Raster/Saatchi_Carbon/Saatchi_EprovUTM36s.tif")
+  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/Zim_Malilangwe/Raster/Saatchi/Malilangwe_CC_Saatchi_UTM36s.tif")
   f<-crop(e,d)
   g<-mask(f,d)
-  ee[,9]<-round(cellStats(g,stat="mean"),2)
-  ee[,10]<-round(cellStats(g,stat="mean")*ee[,4],2)
+  ee[,9]<-round(cellStats(g,stat="mean"),2)*(44/12)
+  ee[,10]<-round(cellStats(g,stat="mean")*ee[,4],2)*(44/12)
   rm(e,f,g)
 ########################THREAT##############################
-  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/EasternZambia_USAID/Raster/USFS_ChangeDetection_Data/Scratch_SiteSelection_EP/Combined_USFS_Hansen_dilate_cross_3x3_close_ball_5x5_sieve_15_8.tif")
+  e<-raster("C:/Users/carbon-gis/Documents/BCP_Data/Projects/Zim_Malilangwe/Raster/HansenGFW/ForestLoss/Clipped_Hansen_GFC2014_loss_20S_030E.tif")
   f<-crop(e,d)
   g<-mask(f,d)
   h<-as.data.frame(freq(g))
   j<-round(h[2,2]/h[1,2]*100,2)
   ee[,11]<-j
-  pol <- rasterToPolygons(f, fun=function(f){f==1})
+  
+  g1<-mask(f,d,inverse=TRUE)
+  pol <- rasterToPolygons(g1, fun=function(g1){g1==1})
   lps <- coordinates(pol)
   ID <- cut(lps[,1], quantile(lps[,1]), include.lowest=TRUE)
   pol.diss<-unionSpatialPolygons(SpP=pol,ID)
